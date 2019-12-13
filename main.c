@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+//https://towardsdatascience.com/tic-tac-toe-creating-unbeatable-ai-with-minimax-algorithm-8af9e52c1e7d
+//https://fearyourself.developpez.com/tutoriel/sdl/morpion/part6/
+//https://fearyourself.developpez.com/tutoriel/sdl/morpion/part7/
+//http://turing.cs.pub.ro/auf2/html/chapters/chapter3/chapter_3_4_2.html
+
 // largeur 70
 
 /*
