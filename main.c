@@ -25,18 +25,17 @@
     proper affichage error
     proper affichage choice with choice possible
     affichage end game
-
-    Regles
-    fonction detection arrow key + enter
-
-    Save :
+    Settings
+        Regles
+    Save
         auto on game ( ask resume when come back)
         and manual
-
     Bot :
-        facile
-        normal
+        facile random play
+        normal search win / avoid other player to win
         difficile
+            - classic : min-max
+            - other (use tactic, ...)
 
     Structure pour passage de flags
     DONE _ Refonte affichage general
@@ -45,6 +44,7 @@
     compartimentation fonction
     In setting enable/disable place player piece on player piece
     Portabilité
+    fonction detection arrow key + enter
 */
 
 size getMaxSize(board game, player player)
@@ -91,7 +91,7 @@ void printStart(int choice)
     if (choice == 0)
     {
         setAttr(whiteBg);
-        printInterminal("startserdcftygv", red);
+        printInterminal("start", red);
         setAttr(blackBg);
         printInterminal(" | quit", white);
         printInterminal(" | Settings", white);
@@ -161,8 +161,7 @@ void printLoad(int choice)
     printLoadTXT(choice, 30, 11);
 }
 
-char *colorPlayer(player player)
-{
+char *colorPlayer(player player){
     char *color;
     if (player == 1)
         color = blue1;
@@ -171,10 +170,8 @@ char *colorPlayer(player player)
     return color;
 }
 
-void printBoard(board game, player current, int lineNumber, int rowNumber, int sourceLine, int sourceRow, int mode)
-{
-    int row = 0, column = 0;
-    char *couleur_joueur, color;
+void printBoard(board game, player current, int lineNumber, int rowNumber, int sourceLine, int sourceRow, int mode){
+    char *couleur_joueur;
     player onCase;
     size pieceSize;
 
@@ -230,7 +227,6 @@ void printBoard(board game, player current, int lineNumber, int rowNumber, int s
                     printInterminal("O", couleur_joueur);
                 if (pieceSize == 3)
                     printInterminal("0", couleur_joueur);
-                    printInterminal("", white);
             }
             else printf(" ");
             setAttr(blackBg);
@@ -256,8 +252,7 @@ void printBoard(board game, player current, int lineNumber, int rowNumber, int s
 
 void moveOnBoard(board game, int *lineNumber, int *rowNumber, int *mode, int *exitGame)
 {
-    int choosing = 1, action=0;
-    char ch;
+    int choosing = 1;
     while (choosing)
     {
         initTermios();
@@ -334,7 +329,6 @@ void startGame()
         exitGame=0,
         choosing = 1,
         choice = 0;
-    char ch;
 
     clear();
 
@@ -344,7 +338,7 @@ void startGame()
         moveOnBoard(game, &lineNumber, &rowNumber, &mode, &exitGame);
         if (mode == 1) //selection
         {
-            if (get_place_holder(game, lineNumber, rowNumber) == NONE
+            if (get_place_holder(game, lineNumber, rowNumber) == NO_PLAYER
                 || IsPossible(game, current, lineNumber, rowNumber))
                 {
                     positionCursor(39, 9);
@@ -378,8 +372,6 @@ void startGame()
                                 sourceLine = lineNumber;
                                 sourceRow = rowNumber;
                                 choosing = 0;
-                                positionCursor(39, 5);
-                                printf("Selection mode");
                             }
                             sizePion = 0;
 
@@ -560,6 +552,7 @@ int main()
     char ch;
 
     clear();
+    hide_cursor();
     cursorControl(cursorDown, 1);
     while (running==1)
     {
@@ -666,55 +659,8 @@ int main()
         else if (menu == 2) // settings
         {
             printSettings(choice);
-            /*
-            while (choosing)
-            {
-                initTermios();
-                switch (fgetc(stdin))
-                {
-                case 27:
-                    if (fgetc(stdin) == 91)
-                    {
-
-                        switch (fgetc(stdin))
-                        {
-
-                        case 65:
-                            (*lineNumber)--; //up
-                            break;
-                        case 66:
-                            (*lineNumber)++; //down
-                            break;
-                        case 67:
-                            (*rowNumber)++; //right
-                            break;
-                        case 68:
-                            (*rowNumber)--; //left
-                            break;
-
-                        default:
-                            break;
-                        }
-
-                        
-
-                        choosing = 0;
-                    }
-                    break;
-                case 10:
-                    
-                    choosing = 0;
-                    break;
-
-                default:
-                    break;
-                }
-                resetTermios();
-            }
-            choosing = 1;
-        }
-        */
         }
     }
+    show_cursor();
     return 0;
 }

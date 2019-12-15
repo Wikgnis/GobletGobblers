@@ -99,14 +99,47 @@ int get_nb_piece_in_house(board game, player checked_player, size piece_size){
 	if ((checked_player == PLAYER_1 || checked_player == PLAYER_2) && (piece_size >= SMALL && piece_size <= LARGE))
 	{
 		nb_piece = game->house[checked_player-1][piece_size-1];
-		printf("test");
 	}
 	return nb_piece;
 };
 
-int place_piece(board game, player current_player, size piece_size, int line, int column);
+int move_is_possible(board game, size piece_size, int line, int column){
+	int flag_move = 0;
+	if ((piece_size>=SMALL && piece_size<=LARGE)
+		&&game->board[line][column].piece[piece_size-1] < piece_size){
+		flag_move = 1;
+	}
+	return flag_move;
+}
 
-int move_piece(board game, int source_line, int source_column, int target_line, int target_column);
+int place_piece(board game, player current_player, size piece_size, int line, int column){
+	if (
+		(line <= 2 && line >= 0) 
+		&& (column <= 2 && column >= 0)
+		&& move_is_possible(game, piece_size, line, column)
+		){
+			game->board[line][column].piece[piece_size-1] = piece_size;
+			game->board[line][column].player[piece_size-1] = current_player;
+			return 0;
+	}
+	else return 1;
+}
+
+int move_piece(board game, int source_line, int source_column, int target_line, int target_column){
+	size piece_size = get_piece_size(game, source_line, source_column);
+	player player_onCAse = get_place_holder(game, source_line, source_column);
+	if (
+		(source_line <= 2 && source_line >= 0) && (target_line <= 2 && target_line >= 0)
+		&& (source_column <= 2 && source_column >= 0) && (target_column <= 2 && target_column >= 0)
+		&& piece_size != NONE
+		&& get_place_holder(game, target_line, target_column)< piece_size
+		&& !place_piece(game, player_onCAse, piece_size, target_line, target_column)){
+			game->board[source_line][source_column].piece[piece_size - 1] = NONE;
+			game->board[source_line][source_column].player[piece_size - 1] = NO_PLAYER;
+			return 0;
+		}
+	else return 1;
+}
 
 void printInfoBoard(board game){
 	printf("Houses :\n");
@@ -133,10 +166,4 @@ void printInfoBoard(board game){
 		}
 		printf("\n");
 	}
-}
-
-int main(void){
-	board game = new_game();
-	printInfoBoard(game);
-	return 0;
 }

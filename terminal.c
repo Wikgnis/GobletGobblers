@@ -9,6 +9,14 @@ void clear()
     printf("%s[2J", esc);
 }
 
+void hide_cursor(){
+    printf("\e[?25l");
+}
+
+void show_cursor(){
+    printf("\e[?25h");
+}
+
 void printInterminal(char string[], char color[])
 {
     printf("%s%s%s%s%s", esc, color, string, esc, white);

@@ -95,3 +95,6 @@ void erase(char mode[]);
  * @param y value on the y axis
  */
 void positionCursor(int x, int y);
+
+void hide_cursor();
+void show_cursor();
