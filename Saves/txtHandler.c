@@ -94,6 +94,9 @@ int replace_line(char filename[], int delete_line, char txt[])
     fclose(ptrRead);
     fclose(ptrWrite);
 
+    remove(filename);
+    rename("temp.txt", filename);
+
     int status = 0;
     if (line!=delete_line) status = 1;
     return status;

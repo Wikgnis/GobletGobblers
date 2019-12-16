@@ -1,4 +1,4 @@
-Goblet_Goblers: main.o 
+Goblet_Goblers: main.o
 	gcc -o Goblet_Goblers main.o terminal.o input.o board.o
 	make clean
 
@@ -14,9 +14,11 @@ input.o : input.c
 board.o : board.c
 	gcc -c board.c
 
-board : board.o
-	gcc -o - Wall board board.c
-	make clean
+Saves : Saves/saves.c Saves/txtHandler.c
+	cd Saves
+	gcc -c *.c
+	mv *.o ../
+	cd ..
 
 clean :
-	rm *.o
+	rm *.o -r
