@@ -11,13 +11,16 @@ int getSizeStr(char *str)
 
 void readFile(char fileName[], char fileTXT_Copy[])
 {
-    char temp[100];
-    FILE* file;
+    char *temp;
+    temp = malloc(sizeof(char[175]));
+    FILE *file;
     file = fopen(fileName, "r");
-    while (fgets(temp, 100, file) != NULL){
+    while (fgets(temp, 175, file) != NULL){
         strcat(fileTXT_Copy, temp);
+        temp = malloc(sizeof(char[100]));
     }
     fclose(file);
+    free(temp);
 }
 
 int find_index_element(char element, char str[])
