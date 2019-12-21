@@ -244,6 +244,20 @@ int place_piece(board game, player current_player, size piece_size, int line, in
  */
 int move_piece(board game, int source_line, int source_column, int target_line, int target_column);
 
+void printInfoBoard(board game);
+
+typedef struct
+{
+    player player[3];
+    size piece[3];
+} case_s;
+
+struct board_s
+{
+    case_s board[3][3];
+    size house[2][3];
+};
+
 /**@}*/
 
 #endif /*_BOARD_H_*/

@@ -1,6 +1,6 @@
-#include "board.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "board.h"
 
 /**
  * \file board.c
@@ -9,21 +9,6 @@
  *
  * \author LEBOCQ Titouan
  */
-
-/**
- * @brief The board of the game, define it as you wish.
- */
-
-typedef struct
-{
-	player player[3];
-	size piece[3];
-}case_s;
-
-struct board_s {
-	case_s board[3][3];
-	size house[2][3];
-};
 
 board new_game(){ 
 	// memory allocation for the board (leave it as is)
@@ -59,7 +44,8 @@ void destroy_game(board game){
 }
 
 board copy_game(board original_game){
-	board copied_game = original_game;
+	board copied_game = malloc(sizeof(struct board_s));
+	copied_game = original_game;
 	return copied_game;
 }
 
@@ -90,8 +76,100 @@ size get_piece_size(board game, int line, int column){
 	return piece_size;
 }
 
+player test_line(board game, int line){
+	player player_onCase = get_place_holder(game, line, 0);
+	int nb_in_line = 1;
+	for (int i = 1; i < 3 && player_onCase; i++)
+	{
+		if (get_place_holder(game, line, i) == player_onCase){
+			nb_in_line +=1;
+		}
+	}
+	return (nb_in_line == 3) ? player_onCase : NO_PLAYER;
+}
+
+player test_column(board game, int column){
+	player player_onCase = get_place_holder(game, 0, column);
+	int nb_in_line = 1;
+	for (int i = 1; i < 3 && player_onCase; i++)
+	{
+		if (get_place_holder(game, i, column) == player_onCase)
+		{
+			nb_in_line += 1;
+		}
+	}
+	return (nb_in_line == 3) ? player_onCase : NO_PLAYER;
+}
+
+player test_diag1(board game){
+	player player_onCase = get_place_holder(game, 0, 0);
+	int nb_in_line = 1;
+	for (int i = 1; i < 3 && player_onCase; i++)
+	{
+		if (get_place_holder(game, i, i) == player_onCase)
+		{
+			nb_in_line += 1;
+		}
+	}
+	return (nb_in_line == 3) ? player_onCase : NO_PLAYER;
+}
+
+player test_diag2(board game){
+	player player_onCase = get_place_holder(game, 2, 0);
+	int nb_in_line = 1;
+	for (int i = 1; i < 3 && player_onCase; i++)
+	{
+		if (get_place_holder(game, 2-i, i) == player_onCase)
+		{
+			nb_in_line += 1;
+		}
+	}
+	return (nb_in_line == 3) ? player_onCase : NO_PLAYER;
+}
+
 player get_winner(board game){
-	return 0;
+	player winner = NO_PLAYER, temp;
+	int different_win = 0;
+	for (int i = 0; i < 3 && !different_win; i++)
+	{
+		temp = test_column(game, i);
+		if (temp != NO_PLAYER){
+			if (temp == winner || winner == NO_PLAYER)
+			{
+				winner = temp;
+			}
+			else if (temp != winner)
+			{
+				different_win ++;
+			}
+		}
+		temp = test_diag1(game);
+		if (temp != NO_PLAYER)
+		{
+			if (temp == winner || winner == NO_PLAYER)
+			{
+				winner = temp;
+			}
+			else if (temp != winner)
+			{
+				different_win++;
+			}
+		}
+		temp = test_diag2(game);
+		if (temp != NO_PLAYER)
+		{
+			if (temp == winner || winner == NO_PLAYER)
+			{
+				winner = temp;
+			}
+			else if (temp != winner)
+			{
+				different_win++;
+			}
+		}
+	}
+
+	return !different_win ? winner : NO_PLAYER;
 };
 
 int get_nb_piece_in_house(board game, player checked_player, size piece_size){
@@ -103,10 +181,11 @@ int get_nb_piece_in_house(board game, player checked_player, size piece_size){
 	return nb_piece;
 };
 
-int move_is_possible(board game, size piece_size, int line, int column){
+int move_is_possible(board game, player current_player, size piece_size, int line, int column){
 	int flag_move = 0;
 	if ((piece_size>=SMALL && piece_size<=LARGE)
-		&&game->board[line][column].piece[piece_size-1] < piece_size){
+		&& game->board[line][column].piece[piece_size-1] < piece_size
+		&& game->house[current_player-1][piece_size-1]>0){
 		flag_move = 1;
 	}
 	return flag_move;
@@ -116,10 +195,11 @@ int place_piece(board game, player current_player, size piece_size, int line, in
 	if (
 		(line <= 2 && line >= 0) 
 		&& (column <= 2 && column >= 0)
-		&& move_is_possible(game, piece_size, line, column)
+		&& move_is_possible(game, current_player,piece_size, line, column)
 		){
 			game->board[line][column].piece[piece_size-1] = piece_size;
 			game->board[line][column].player[piece_size-1] = current_player;
+			game->house[current_player-1][piece_size-1] --;
 			return 0;
 	}
 	else return 1;
@@ -136,6 +216,7 @@ int move_piece(board game, int source_line, int source_column, int target_line, 
 		&& !place_piece(game, player_onCAse, piece_size, target_line, target_column)){
 			game->board[source_line][source_column].piece[piece_size - 1] = NONE;
 			game->board[source_line][source_column].player[piece_size - 1] = NO_PLAYER;
+			game->house[player_onCAse-1][piece_size-1] ++;
 			return 0;
 		}
 	else return 1;
