@@ -6,6 +6,7 @@
 #include <SDL_based_interface/GobletGoblers.h>
 
 //gcc src/main_SDL.c -IC:\MinGW_lib\i686-w64-mingw32\include -IInclude -LC:\MinGW_lib\i686-w64-mingw32\lib -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -o test
+//gcc src/main_SDL.c -Iinclude -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -o test
 int main(int argc, char **argv)
 {
     //The window we'll be rendering to
@@ -27,7 +28,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            SetupGbtGblr(window);
+            //SetupGbtGblr(window);
         }
     }
     //Destroy window
