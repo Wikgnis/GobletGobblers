@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//gcc -Wall -Wextra -L./lib -I./include -lSDL2-2.0 main_SDL.c -o Goblet_Goblers
-
 int main(int argc, char **argv)
 {
     /* Initialisation simple */
