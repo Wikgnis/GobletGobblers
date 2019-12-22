@@ -1,20 +1,15 @@
-#include <SDL2/SDL.h>
-#include <GameEngine/board.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+//graphical interface lib
+#include <SDL2/SDL.h>
+//game lib
+#include <SDL_based_interface/GobletGoblers.h>
 
 //gcc src/main_SDL.c -IC:\MinGW_lib\i686-w64-mingw32\include -IInclude -LC:\MinGW_lib\i686-w64-mingw32\lib -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -o test
 int main(int argc, char **argv)
 {
     //The window we'll be rendering to
     SDL_Window *window = NULL;
-
-    //The surface contained by the window
-    SDL_Surface *screenSurface = NULL;
 
     //Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -32,17 +27,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            //Get window surface
-            screenSurface = SDL_GetWindowSurface(window);
-
-            //Fill the surface white
-            SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
-
-            //Update the surface
-            SDL_UpdateWindowSurface(window);
-
-            //Wait two seconds
-            SDL_Delay(2000);
+            SetupGbtGblr(window);
         }
     }
     //Destroy window
