@@ -1,40 +1,21 @@
 #include <SDL2/SDL.h>
-#include "./Include/GameEngine/board.h"
+#include <GameEngine/board.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-//gcc -Wall -Wextra -L./lib -I./include -lSDL2-2.0 main_SDL.c -o Goblet_Goblers
-
+//gcc src/main_SDL.c -IC:\MinGW_lib\i686-w64-mingw32\include -IInclude -LC:\MinGW_lib\i686-w64-mingw32\lib -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -o test
 int main(int argc, char **argv)
 {
     /* Initialisation simple */
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
         fprintf(stdout, "Échec de l'initialisation de la SDL (%s)\n", SDL_GetError());
         return -1;
     }
 
-    {
-        /* Création de la fenêtre */
-        SDL_Window *pWindow = NULL;
-        pWindow = SDL_CreateWindow("Ma première application SDL2", SDL_WINDOWPOS_UNDEFINED,
-                                   SDL_WINDOWPOS_UNDEFINED,
-                                   640,
-                                   480,
-                                   SDL_WINDOW_SHOWN);
 
-        if (pWindow)
-        {
-            SDL_Delay(3000); /* Attendre trois secondes, que l'utilisateur voit la fenêtre */
 
-            SDL_DestroyWindow(pWindow);
-        }
-        else
-        {
-            fprintf(stderr, "Erreur de création de la fenêtre: %s\n", SDL_GetError());
-        }
-    }
-
+    /* Quit SDL */
     SDL_Quit();
 
     return 0;
