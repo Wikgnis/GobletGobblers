@@ -1,7 +1,9 @@
-#include "SDL2/SDL.h"
-#include "GameEngine/board.h"
+#include <SDL2/SDL.h>
+#include "./Include/GameEngine/board.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+//gcc -Wall -Wextra -L./lib -I./include -lSDL2-2.0 main_SDL.c -o Goblet_Goblers
 
 int main(int argc, char **argv)
 {
