@@ -4,6 +4,7 @@
 #include <GobletGoblers.h>
 //graphical interface lib
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 // gcc src/main_SDL.c lib/GobletGoblers.c  -Iinclude -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -o test
 
@@ -13,12 +14,11 @@ int main(int argc, char **argv)
     SDL_Window *window = NULL;
     Game_Interface game;
 
-        //Initialize SDL
-        if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    //Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
     }
-
     else
     {
         game = SetupGbtGblr(window);

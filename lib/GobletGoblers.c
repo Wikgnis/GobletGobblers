@@ -1,8 +1,9 @@
 #include <GobletGoblers.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
-// gcc src/main_SDL.c lib/GobletGoblers.c  -Iinclude -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -o test
+// gcc src/main_SDL.c lib/GobletGoblers.c  -Iinclude -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o test
 
 /*
 SDL_WINDOW_FULLSCREEN fullscreen window
@@ -37,12 +38,59 @@ SDL_WINDOW_ALLOW_HIGHDPI window should be created in high-DPI mode if supported 
 
 // https://www.geeksforgeeks.org/bresenhams-circle-drawing-algorithm/
 
-void SDL_RenderCircle(){
+void SDL_RenderCircle(Game_Interface *game, int r, int xc, int yc){
+    int x = 0, y = r;
+    int d = 5 - 4*r;
+    while (x<=y)
+    {
+        /* without fill
+        SDL_RenderDrawPoint(game->Renderer, x + xc, y + yc);
+        SDL_RenderDrawPoint(game->Renderer, y + xc, x + yc);
+        SDL_RenderDrawPoint(game->Renderer, -x + xc, y + yc);
+        SDL_RenderDrawPoint(game->Renderer, -y + xc, x + yc);
+        SDL_RenderDrawPoint(game->Renderer, x + xc, -y + yc);
+        SDL_RenderDrawPoint(game->Renderer, y + xc, -x + yc);
+        SDL_RenderDrawPoint(game->Renderer, -x + xc, -y + yc);
+        SDL_RenderDrawPoint(game->Renderer, -y + xc, -x + yc);
+        */
+       /* with fill
+        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, x + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, x + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, -y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, -x + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, -y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, -x + yc);
+        */
+        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, x + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, x + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, -y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, -x + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, -y + yc);
+        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, -x + yc);
+        if (d>0){
+            y--;
+            d = d - 8*y;
+        }
+        x++;
+        d = d+8*x+4;
+    }
+}
+
+void display(Game_Interface *game)
+{
+
+}
+
+void display_start_menu()
+{
     
 }
 
-    void
-    run(Game_Interface *game)
+void run(Game_Interface *game)
 {
     int quit = 0;
     while (!quit)
@@ -78,15 +126,6 @@ void SDL_RenderCircle(){
             }
         }
         
-        //Clear screen
-        SDL_SetRenderDrawColor(game->Renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        SDL_RenderClear(game->Renderer);
-        //Render red filled quad
-        SDL_Rect fillRect = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
-        SDL_SetRenderDrawColor(game->Renderer, 0xFF, 0x00, 0x00, 0xFF);
-        SDL_RenderFillRect(game->Renderer, &fillRect);
-        //Update screen
-        SDL_RenderPresent(game->Renderer);
     }
 }
 
