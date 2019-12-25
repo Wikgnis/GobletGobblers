@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "txtHandler.h"
-#include "../board.h"
+#include <Saves/txtHandler.h>
+#include <GameEngine/board.h>
 
 void save(board game, int save){
     char *str_save = NULL;

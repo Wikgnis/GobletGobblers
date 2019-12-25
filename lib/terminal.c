@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "terminal.h"
+#include <TxtBasedInterface/terminal.h>
 
 
 // pour deplacement curseur "\033[x,yf" (start at 1)
