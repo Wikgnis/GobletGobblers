@@ -9,22 +9,25 @@
 #include <board.h>
 
 /*
-gcc src/main_SDL.c lib/GobletGoblers.c -Iinclude -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o test
+gcc src/main_SDL.c lib/GobletGoblers.c lib/board.c -Iinclude -Llib -w -Wl,-subsystem,windows -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o test
+gcc src/main_SDL.c lib/GobletGoblers.c lib/board.c -Iinclude -Llib -w -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o test
 */
 
-void SDL_RenderCircle(Game_Interface *game, int r, int xc, int yc){
+//custom made circle creator algorythm for SDL
+void SDL_RenderCircle(SDL_Renderer *renderer, int r, int xc, int yc)
+{
     int x = 0, y = r;
     int d = 5 - 4*r;
     while (x<=y)
     {
-        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, x + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, x + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, -y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, -x + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, -y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, -x + yc);
+        SDL_RenderDrawPoint(renderer, x + xc, y + yc);
+        SDL_RenderDrawPoint(renderer, y + xc, x + yc);
+        SDL_RenderDrawPoint(renderer, -x + xc, y + yc);
+        SDL_RenderDrawPoint(renderer, -y + xc, x + yc);
+        SDL_RenderDrawPoint(renderer, x + xc, -y + yc);
+        SDL_RenderDrawPoint(renderer, y + xc, -x + yc);
+        SDL_RenderDrawPoint(renderer, -x + xc, -y + yc);
+        SDL_RenderDrawPoint(renderer, -y + xc, -x + yc);
         if (d>0){
             y--;
             d = d - 8*y;
@@ -34,21 +37,43 @@ void SDL_RenderCircle(Game_Interface *game, int r, int xc, int yc){
     }
 }
 
-void display(Game_Interface *game)
+void SDL_RenderFillCircle(SDL_Renderer *renderer, int r, int xc, int yc)
 {
-
+    int x = 0, y = r;
+    int d = 5 - 4 * r;
+    while (x <= y)
+    {
+        SDL_RenderDrawLine(renderer, xc, yc, x + xc, y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, y + xc, x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -x + xc, y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -y + xc, x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, x + xc, -y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, y + xc, -x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -x + xc, -y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -y + xc, -x + yc);
+        if (d > 0)
+        {
+            y--;
+            d = d - 8 * y;
+        }
+        x++;
+        d = d + 8 * x + 4;
+    }
 }
 
-void display_start_menu()
+void SDL_ClearRenderer(Game_Interface *game)
 {
-    
+    SDL_RenderClear(game->Renderer);
 }
 
-void run(Game_Interface *game)
+void GobletGoblers_RunGame(Game_Interface *game)
 {
     int quit = 0;
     while (!quit)
     {
+        SDL_SetRenderDrawColor(game->Renderer, 255, 255, 255, 255);
+        SDL_RenderFillCircle(game->Renderer, 100, 200, 200);
+        //event listener
         while (SDL_PollEvent(&(game->evt)) != 0)
         {
             //User requests quit
@@ -59,7 +84,6 @@ void run(Game_Interface *game)
             //User presses a key
             else if (game->evt.type == SDL_KEYDOWN)
             {
-                //Select surfaces based on key press
                 switch (game->evt.key.keysym.sym)
                 {
                     case SDLK_UP:
@@ -79,10 +103,9 @@ void run(Game_Interface *game)
                 }
             }
         }
-        
+        SDL_RenderPresent(game->Renderer);
     }
 }
-
 /*
     //Key press surfaces constants
     enum KeyPressSurfaces
@@ -96,10 +119,26 @@ void run(Game_Interface *game)
     };
 */
 
-void quit(Game_Interface *game)
+void freeMedia(Game_Interface *game)
 {
+    int i = 0;
+    while (game->loadedSurface[i] != NULL)
+    {
+        printf("unload surface : %p\n", game->loadedSurface[i]);
+        SDL_FreeSurface(game->loadedSurface[i]);
+        game->loadedSurface[i] = NULL;
+        i++;
+    }
+}
+
+void GobletGoblers_QuitGame(Game_Interface *game)
+{
+    // unload all images
+    freeMedia(game);
     //Quit TTF
     TTF_Quit();
+    //Destroy renderer
+    SDL_DestroyRenderer(game->Renderer);
     //Destroy window
     SDL_DestroyWindow(game->game_window);
     //Quit SDL subsystems
@@ -136,10 +175,19 @@ Game_Interface SetupGbtGblr()
         {
         // initialise the Game_Interface struct
             Game_Interface game;
+            // SDL init
             game.game_window = game_window;
-            game.Renderer = SDL_CreateRenderer(game.game_window, -1, SDL_RENDERER_ACCELERATED);
-            game.run = (*run);
-            game.quit = (*quit);
+            game.Renderer = SDL_CreateRenderer(game_window, -1, SDL_RENDERER_ACCELERATED);
+            game.run = (*GobletGoblers_RunGame);
+            game.quit = (*GobletGoblers_QuitGame);
+            game.clear = (*SDL_ClearRenderer);
+            for (int i = 0; i < MAX_LOADED_MEDIA; i++)
+            {
+                game.loadedSurface[i] = NULL;
+            }
+            
+            // Game engine init
+            game.game_board = new_game();
             return game;
         }
     }
@@ -178,22 +226,31 @@ SDL_WINDOW_ALLOW_HIGHDPI window should be created in high-DPI mode if supported 
 
 // https://www.geeksforgeeks.org/bresenhams-circle-drawing-algorithm/
 /* without fill
-        SDL_RenderDrawPoint(game->Renderer, x + xc, y + yc);
-        SDL_RenderDrawPoint(game->Renderer, y + xc, x + yc);
-        SDL_RenderDrawPoint(game->Renderer, -x + xc, y + yc);
-        SDL_RenderDrawPoint(game->Renderer, -y + xc, x + yc);
-        SDL_RenderDrawPoint(game->Renderer, x + xc, -y + yc);
-        SDL_RenderDrawPoint(game->Renderer, y + xc, -x + yc);
-        SDL_RenderDrawPoint(game->Renderer, -x + xc, -y + yc);
-        SDL_RenderDrawPoint(game->Renderer, -y + xc, -x + yc);
+        SDL_RenderDrawPoint(renderer, x + xc, y + yc);
+        SDL_RenderDrawPoint(renderer, y + xc, x + yc);
+        SDL_RenderDrawPoint(renderer, -x + xc, y + yc);
+        SDL_RenderDrawPoint(renderer, -y + xc, x + yc);
+        SDL_RenderDrawPoint(renderer, x + xc, -y + yc);
+        SDL_RenderDrawPoint(renderer, y + xc, -x + yc);
+        SDL_RenderDrawPoint(renderer, -x + xc, -y + yc);
+        SDL_RenderDrawPoint(renderer, -y + xc, -x + yc);
         */
 /* with fill
-        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, x + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, x + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, x + xc, -y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, y + xc, -x + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -x + xc, -y + yc);
-        SDL_RenderDrawLine(game->Renderer, xc, yc, -y + xc, -x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, x + xc, y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, y + xc, x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -x + xc, y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -y + xc, x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, x + xc, -y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, y + xc, -x + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -x + xc, -y + yc);
+        SDL_RenderDrawLine(renderer, xc, yc, -y + xc, -x + yc);
         */
+/* test filled circle
+void SDL_RenderFillCircle(SDL_Renderer *renderer, int r, int xc, int yc)
+{
+    for (int i = 1; i <= r; i++)
+    {
+        SDL_RenderCircle(renderer, i, xc, yc);
+    }
+}
+*/
