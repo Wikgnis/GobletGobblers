@@ -44,8 +44,8 @@ void destroy_game(board game)
 
 board copy_game(board original_game)
 {
-	board copied_game = malloc(sizeof(struct board_s));
-	copied_game = original_game;
+	board copied_game = new_game();
+	*copied_game = *original_game;
 	return copied_game;
 }
 
@@ -57,11 +57,14 @@ player next_player(player current_player)
 player get_place_holder(board game, int line, int column)
 {
 	player onCase = NO_PLAYER;
-	for (int i = 2; i >= 0 && onCase == NO_PLAYER; i--)
+	if (line >= 0 && line < 3 && column >= 0 && column < 3)
 	{
-		if (game->board[line][column].player[i] != NO_PLAYER)
+		for (int i = 2; i >= 0 && onCase == NO_PLAYER; i--)
 		{
-			onCase = game->board[line][column].player[i];
+			if (game->board[line][column].player[i] != NO_PLAYER)
+			{
+				onCase = game->board[line][column].player[i];
+			}
 		}
 	}
 	return onCase;
@@ -70,11 +73,14 @@ player get_place_holder(board game, int line, int column)
 size get_piece_size(board game, int line, int column)
 {
 	size piece_size = NONE;
-	for (int i = 2; i >= 0 && piece_size == NONE; i--)
+	if (line >= 0 && line < 3 && column >= 0 && column < 3)
 	{
-		if (game->board[line][column].piece[i] != NONE)
+		for (int i = 2; i >= 0 && piece_size == NONE; i--)
 		{
-			piece_size = game->board[line][column].piece[i];
+			if (game->board[line][column].piece[i] != NONE)
+			{
+				piece_size = game->board[line][column].piece[i];
+			}
 		}
 	}
 	return piece_size;
