@@ -59,25 +59,29 @@ void deleteCursor(cursor cursor)
     cursor = NULL;
 }
 
-void GobletGoblers_RenderCursor(Game_Interface *game)
+void GobletGoblers_RenderCursor(Game_Interface * game)
 {
-    int scale = 10; // for thickness
-    SDL_SetRenderDrawColor(game->Renderer, 0, 0, 0, 255);
-    SDL_RenderSetScale(game->Renderer, scale, scale);
+    if (game->cursor->type == CHOICE || game->cursor->type == PLACE)
+    {
+        SDL_SetRenderDrawColor(game->Renderer, 0, 0, 0, 255);
+    }
+    else if (game->cursor->type == MOVE)
+    {
+        SDL_SetRenderDrawColor(game->Renderer, 255, 0, 0, 255);
+    }
     SDL_Rect SDL_cursor = {
-        ((game->board_info.coords[0]) + (game->cursor->coords[0]) * (game->board_info.size_case))/scale,
-        ((game->board_info.coords[1]) + (game->cursor->coords[1]) * (game->board_info.size_case))/scale,
-        game->board_info.size_case/scale,
-        game->board_info.size_case/scale
-    };
+        ((game->board_info.coords[0]) + (game->cursor->coords[0]) * (game->board_info.size_case)),
+        ((game->board_info.coords[1]) + (game->cursor->coords[1]) * (game->board_info.size_case)),
+        game->board_info.size_case,
+        game->board_info.size_case};
     SDL_RenderDrawRect(game->Renderer, &SDL_cursor);
-    SDL_RenderSetScale(game->Renderer, 1, 1);
+    SDL_SetRenderDrawColor(game->Renderer, 255, 255, 255, 255);
 }
 
-void GobletGoblers_RenderCase(Game_Interface *game, int line, int column)
+void GobletGoblers_RenderCase(Game_Interface * game, int line, int column)
 {
     int onCase = get_place_holder(game->game_board, line, column);
-    if ( onCase != 0)
+    if (onCase != 0)
     {
         int color[3];
         if (onCase == 1)
@@ -92,7 +96,7 @@ void GobletGoblers_RenderCase(Game_Interface *game, int line, int column)
             color[1] = 235;
             color[2] = 211;
         }
-        
+
         int x_case, y_case;
         x_case = game->board_info.coords[0] + column * game->board_info.size_case;
         y_case = game->board_info.coords[1] + line * game->board_info.size_case;
@@ -105,7 +109,7 @@ void GobletGoblers_RenderCase(Game_Interface *game, int line, int column)
     }
 }
 
-void GobletGoblers_RenderBoard(Game_Interface *game)
+void GobletGoblers_RenderBoard(Game_Interface * game)
 {
     // board itself
     SDL_SetRenderDrawColor(game->Renderer, 20, 189, 172, 255);
@@ -113,8 +117,7 @@ void GobletGoblers_RenderBoard(Game_Interface *game)
         game->board_info.coords[0],
         game->board_info.coords[1],
         game->board_info.size,
-        game->board_info.size
-    };
+        game->board_info.size};
     SDL_RenderFillRect(game->Renderer, &SDL_board);
     SDL_SetRenderDrawColor(game->Renderer, 13, 161, 146, 255);
     SDL_Rect line;
@@ -146,10 +149,164 @@ void GobletGoblers_RenderBoard(Game_Interface *game)
     GobletGoblers_RenderCursor(game);
 }
 
+void GobletGoblers_choosePlacePion(Game_Interface * game, player * current)
+{
+    int choice = 0;
+    size pion_size;
+    while (!choice)
+    {
+        while (SDL_PollEvent(&(game->evt)) != 0)
+        {
+            if (game->evt.type == SDL_KEYDOWN)
+            {
+                switch (game->evt.key.keysym.sym)
+                {
+                case SDLK_1:
+                    pion_size = SMALL;
+                    choice = 1;
+                    break;
+
+                case SDLK_2:
+                    pion_size = MEDIUM;
+                    choice = 1;
+                    break;
+
+                case SDLK_3:
+                    pion_size = LARGE;
+                    choice = 1;
+                    break;
+
+                case SDLK_ESCAPE:
+                    pion_size = NONE;
+                    choice = 1;
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    game->cursor->type = CHOICE;
+    if (!place_piece(game->game_board, *current, pion_size, game->cursor->coords[1], game->cursor->coords[0]))
+    {
+        *current = next_player(*current);
+    }
+}
+
+int GobletGoblers_chooseAction(Game_Interface * game, player * current)
+{
+    int choice = 0;
+    while (!choice)
+    {
+        while (SDL_PollEvent(&(game->evt)) != 0)
+        {
+            if (game->evt.type == SDL_KEYDOWN)
+            {
+                switch (game->evt.key.keysym.sym)
+                {
+                case SDLK_1:
+                    game->cursor->type = PLACE;
+                    choice = 1;
+                    break;
+
+                case SDLK_2:
+                    game->cursor->type = MOVE;
+                    game->cursor->source_coords[0] = game->cursor->coords[0];
+                    game->cursor->source_coords[1] = game->cursor->coords[1];
+                    choice = 1;
+                    break;
+
+                case SDLK_ESCAPE:
+                    game->cursor->type = CHOICE;
+                    choice = 1;
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+    }
+}
+
+GobletGoblers_MovePion(Game_Interface * game, player * current)
+{
+    int choice = 0;
+
+    while (!choice)
+    {
+        while (SDL_PollEvent(&(game->evt)) != 0)
+        {
+            SDL_RenderClear(game->Renderer);
+            GobletGoblers_RenderBoard(game);
+            //User presses a key
+            if (game->evt.type == SDL_KEYDOWN)
+            {
+                switch (game->evt.key.keysym.sym)
+                {
+                case SDLK_UP:
+                    game->cursor->coords[1]--;
+                    if (game->cursor->coords[1] < 0)
+                    {
+                        game->cursor->coords[1] = 2;
+                    }
+                    break;
+
+                case SDLK_DOWN:
+                    game->cursor->coords[1]++;
+                    if (game->cursor->coords[1] > 2)
+                    {
+                        game->cursor->coords[1] = 0;
+                    }
+                    break;
+
+                case SDLK_LEFT:
+                    game->cursor->coords[0]--;
+                    if (game->cursor->coords[0] < 0)
+                    {
+                        game->cursor->coords[0] = 2;
+                    }
+                    break;
+
+                case SDLK_RIGHT:
+                    game->cursor->coords[0]++;
+                    if (game->cursor->coords[0] > 2)
+                    {
+                        game->cursor->coords[0] = 0;
+                    }
+                    break;
+
+                case SDLK_RETURN:
+                    choice = 1;
+                    break;
+
+                case SDLK_ESCAPE:
+                    choice = 2;
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+        SDL_RenderPresent(game->Renderer);
+    }
+
+    if (
+        choice == 1 && (*current == get_place_holder(game->game_board, game->cursor->coords[1], game->cursor->coords[0]) || get_place_holder(game->game_board, game->cursor->coords[1], game->cursor->coords[0]) == NO_PLAYER) && move_piece(game->game_board, game->cursor->source_coords[1], game->cursor->source_coords[0], game->cursor->coords[1], game->cursor->coords[0] == 0))
+    {
+        *current = next_player(*current);
+    }
+
+    game->cursor->type = CHOICE;
+}
+
 void GobletGoblers_RunGame(Game_Interface *game)
 {
     int quit = 0;
-    while (!quit)
+    player current = next_player(current);
+    while (!quit && get_winner(game->game_board) == NO_PLAYER)
     {
         SDL_RenderClear(game->Renderer);
         GobletGoblers_RenderBoard(game);
@@ -200,6 +357,11 @@ void GobletGoblers_RunGame(Game_Interface *game)
 
                     case SDLK_RETURN:
                         // enter choice mode
+                        GobletGoblers_chooseAction(game, &current);
+                        break;
+
+                    case SDLK_ESCAPE:
+                        quit = 1;
                         break;
 
                     default:
@@ -208,20 +370,10 @@ void GobletGoblers_RunGame(Game_Interface *game)
             }
         }
         SDL_RenderPresent(game->Renderer);
+        if (game->cursor->type == PLACE) GobletGoblers_choosePlacePion(game, &current);
+        else if (game->cursor->type == MOVE) GobletGoblers_MovePion(game, &current);
     }
 }
-/*
-    //Key press surfaces constants
-    enum KeyPressSurfaces
-    {
-        KEY_PRESS_SURFACE_DEFAULT,
-        KEY_PRESS_SURFACE_UP,
-        KEY_PRESS_SURFACE_DOWN,
-        KEY_PRESS_SURFACE_LEFT,
-        KEY_PRESS_SURFACE_RIGHT,
-        KEY_PRESS_SURFACE_TOTAL
-    };
-*/
 
 void freeMedia(Game_Interface *game)
 {
@@ -290,25 +442,14 @@ Game_Interface SetupGbtGblr()
             }
             // Game engine init
             game.game_board = new_game();
-            place_piece(game.game_board, 1, 1, 0, 0);
-            place_piece(game.game_board, 2, 2, 1, 1);
-            place_piece(game.game_board, 1, 3, 2, 2);
             // important gb gobblers values for SDL
-            if (SCREEN_WIDTH * PERCENT_WIDTH_BOARD > SCREEN_HEIGHT)
-            {
-                game.board_info.size = SCREEN_HEIGHT;
-                game.board_info.coords[0] = (SCREEN_WIDTH * PERCENT_WIDTH_BOARD - SCREEN_HEIGHT) / 2;
-                game.board_info.coords[1] = 0;
-            }
-            else
-            {
-                game.board_info.size = SCREEN_WIDTH * PERCENT_WIDTH_BOARD;
-                game.board_info.coords[0] = 0;
-                game.board_info.coords[1] = (SCREEN_HEIGHT - SCREEN_WIDTH * PERCENT_WIDTH_BOARD) / 2;
-            }
+            game.board_info.size = SCREEN_WIDTH;
+            game.board_info.coords[0] = 0;
+            game.board_info.coords[1] = 0;
             game.board_info.size_case = game.board_info.size / 3;
             // cursor
             game.cursor = newCursor();
+
             return game;
         }
     }
