@@ -1,3 +1,5 @@
+// standart c lib
+#include <stdio.h>
 //game lib
 #include <GobletGoblers.h>
 

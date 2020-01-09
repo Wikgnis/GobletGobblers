@@ -532,7 +532,7 @@ void freeMedia(Game_Interface *game)
     while (game->loaded_media.texture[i] != NULL)
     {
         printf("unload surface : %p\n", game->loaded_media.texture[i]);
-        SDL_FreeSurface(game->loaded_media.texture[i]);
+        SDL_DestroyTexture(game->loaded_media.texture[i]);
         game->loaded_media.texture[i] = NULL;
         i++;
     }
