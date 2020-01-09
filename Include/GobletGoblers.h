@@ -12,8 +12,21 @@
 #define SCREEN_HEIGHT 950
 //Loaded media simultaniously in the window
 #define MAX_LOADED_MEDIA 10
+
 // different status of the widow
 typedef enum {NOTHING_LOADED, WINDOW_LOADED, BOARD_LOADED, WINDOW_UPDATE} status;
+
+//enum for loaded media
+enum board_media
+{
+    CURRENT_PLAYER,
+    HOUSE_1_SMALL,
+    HOUSE_1_MEDIUM,
+    HOUSE_1_LARGE,
+    HOUSE_2_SMALL,
+    HOUSE_2_MEDIUM,
+    HOUSE_2_LARGE
+};
 
 //declaration of a type ptr_func to void func
 typedef void (*ptr_func)();
@@ -57,6 +70,7 @@ typedef struct
     // goblet_goblers component
     board game_board;
     cursor cursor;
+    player current_player;
     // action on the struct
     ptr_func run;
     ptr_func quit;
