@@ -63,7 +63,7 @@ void GobletGoblers_RenderCursor(Game_Interface * game)
 {
     if (game->cursor->type == CHOICE || game->cursor->type == PLACE)
     {
-        SDL_SetRenderDrawColor(game->Renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(game->Renderer, 255, 255, 255, 255);
     }
     else if (game->cursor->type == MOVE)
     {
@@ -109,6 +109,26 @@ void GobletGoblers_RenderCase(Game_Interface * game, int line, int column)
     }
 }
 
+void GobletGoblers_renderinfo(Game_Interface * game)
+{
+    TTF_Font *font = TTF_OpenFont("./item/font/Montserrat-Black.ttf", 25);
+    SDL_Color color = {0, 0, 0, 255};
+    char *string;
+
+    if ()
+
+    game->loaded_media.surface[0] = TTF_RenderText_Solid(font, string, color);
+    game->loaded_media.texture[0] = SDL_CreateTextureFromSurface(game->Renderer, game->loaded_media.surface[0]);
+
+    int texW = 0;
+    int texH = 0;
+    SDL_QueryTexture(game->loaded_media.texture[0], NULL, NULL, &texW, &texH);
+    SDL_Rect dstrect = {0, SCREEN_HEIGHT-texH, texW, texH};
+    SDL_RenderCopy(game->Renderer, game->loaded_media.texture[0], NULL, &dstrect);
+
+    TTF_CloseFont(font);
+}
+
 void GobletGoblers_RenderBoard(Game_Interface * game)
 {
     // board itself
@@ -147,6 +167,10 @@ void GobletGoblers_RenderBoard(Game_Interface * game)
     }
     // cursor for selection
     GobletGoblers_RenderCursor(game);
+    // text info
+    GobletGoblers_renderinfo(game);
+    // save status struct
+    game->current_status = BOARD_LOADED;
 }
 
 void GobletGoblers_choosePlacePion(Game_Interface * game, player * current)
@@ -188,9 +212,27 @@ void GobletGoblers_choosePlacePion(Game_Interface * game, player * current)
         }
     }
     game->cursor->type = CHOICE;
-    if (!place_piece(game->game_board, *current, pion_size, game->cursor->coords[1], game->cursor->coords[0]))
+    switch (place_piece(game->game_board, *current, pion_size, game->cursor->coords[1], game->cursor->coords[0]))
     {
+    case 0:
         *current = next_player(*current);
+        game->current_status = WINDOW_UPDATE;
+        break;
+
+    case 1:
+        /* code */
+        break;
+
+    case 2:
+        /* code */
+        break;
+
+    case 3:
+        /* code */
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -293,10 +335,41 @@ GobletGoblers_MovePion(Game_Interface * game, player * current)
         SDL_RenderPresent(game->Renderer);
     }
 
+    int x, y;
+    x = game->cursor->coords[1];
+    y = game->cursor->coords[0];
+
+    int source_x, source_y;
+    source_x = game->cursor->source_coords[1];
+    source_y = game->cursor->source_coords[0];
+
     if (
-        choice == 1 && (*current == get_place_holder(game->game_board, game->cursor->coords[1], game->cursor->coords[0]) || get_place_holder(game->game_board, game->cursor->coords[1], game->cursor->coords[0]) == NO_PLAYER) && move_piece(game->game_board, game->cursor->source_coords[1], game->cursor->source_coords[0], game->cursor->coords[1], game->cursor->coords[0] == 0))
+        choice == 1
+        && *current == get_place_holder(game->game_board, source_x, source_y)
+        )
     {
-        *current = next_player(*current);
+        switch (move_piece(game->game_board, source_x, source_y, x, y))
+        {
+        case 0:
+            *current = next_player(*current);
+            game->current_status = WINDOW_UPDATE;
+            break;
+
+        case 1:
+            /* code */
+            break;
+
+        case 2:
+            /* code */
+            break;
+
+        case 3:
+            /* code */
+            break;
+
+        default:
+            break;
+        }
     }
 
     game->cursor->type = CHOICE;
@@ -306,6 +379,7 @@ void GobletGoblers_RunGame(Game_Interface *game)
 {
     int quit = 0;
     player current = next_player(current);
+    game->current_status = WINDOW_LOADED;
     while (!quit && get_winner(game->game_board) == NO_PLAYER)
     {
         SDL_RenderClear(game->Renderer);
@@ -378,17 +452,26 @@ void GobletGoblers_RunGame(Game_Interface *game)
 void freeMedia(Game_Interface *game)
 {
     int i = 0;
-    while (game->loadedSurface[i] != NULL)
+    while (game->loaded_media.surface[i] != NULL)
     {
-        printf("unload surface : %p\n", game->loadedSurface[i]);
-        SDL_FreeSurface(game->loadedSurface[i]);
-        game->loadedSurface[i] = NULL;
+        printf("unload surface : %p\n", game->loaded_media.surface[i]);
+        SDL_FreeSurface(game->loaded_media.surface[i]);
+        game->loaded_media.surface[i] = NULL;
+        i++;
+    }
+    while (game->loaded_media.texture[i] != NULL)
+    {
+        printf("unload surface : %p\n", game->loaded_media.texture[i]);
+        SDL_FreeSurface(game->loaded_media.texture[i]);
+        game->loaded_media.texture[i] = NULL;
         i++;
     }
 }
 
 void GobletGoblers_QuitGame(Game_Interface *game)
 {
+    // for potentials error
+    printf("ERROR HANDLER : %s", SDL_GetError());
     // unload all images
     freeMedia(game);
     //Quit TTF
@@ -438,7 +521,8 @@ Game_Interface SetupGbtGblr()
             game.quit = (*GobletGoblers_QuitGame);
             for (int i = 0; i < MAX_LOADED_MEDIA; i++)
             {
-                game.loadedSurface[i] = NULL;
+                game.loaded_media.surface[i] = NULL;
+                game.loaded_media.texture[i] = NULL;
             }
             // Game engine init
             game.game_board = new_game();
@@ -449,7 +533,8 @@ Game_Interface SetupGbtGblr()
             game.board_info.size_case = game.board_info.size / 3;
             // cursor
             game.cursor = newCursor();
-
+            // status
+            game.current_status = WINDOW_LOADED;
             return game;
         }
     }

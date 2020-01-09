@@ -7,6 +7,7 @@ int main(int argc, char **argv)
     game = SetupGbtGblr();
     game.run();
     game.quit(&game);
+    printf("End of the program.");
 
     return 0;
 }

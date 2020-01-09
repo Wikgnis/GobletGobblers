@@ -9,18 +9,28 @@
 
 //Screen dimension constants
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 900
+#define SCREEN_HEIGHT 950
 //Loaded media simultaniously in the window
 #define MAX_LOADED_MEDIA 10
+// different status of the widow
+typedef enum {NOTHING_LOADED, WINDOW_LOADED, BOARD_LOADED, WINDOW_UPDATE} status;
 
 //declaration of a type ptr_func to void func
 typedef void (*ptr_func)();
+
 // gb gobblers board info for sdl
 typedef struct{
     int coords[2];
     int size;
     int size_case;
 }_SDL_Board_Info;
+
+//
+typedef struct {
+    SDL_Surface *surface[MAX_LOADED_MEDIA];
+    SDL_Texture *texture[MAX_LOADED_MEDIA];
+} _loaded_media;
+
 // cursor used to play
 enum _cursor_type {CHOICE = 0, PLACE, MOVE};
 typedef enum _cursor_type cursor_type;
@@ -31,6 +41,7 @@ struct _cursor
     cursor_type type;
 };
 typedef struct _cursor *cursor;
+
 //main stuct which hold all necessary part of the SDL goblet_goblers
 typedef struct
 {
@@ -39,7 +50,8 @@ typedef struct
     SDL_Window *game_window;
     SDL_Renderer *Renderer;
     SDL_Event evt;
-    SDL_Surface *loadedSurface[MAX_LOADED_MEDIA]; // contain pointer to all loaded surfaces on screen
+    _loaded_media loaded_media;
+    status current_status;
     // graphic interface
     _SDL_Board_Info board_info;
     // goblet_goblers component
